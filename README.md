@@ -49,11 +49,11 @@ Optional Arguments:
 - --output_file_path: Path to save the credentials file. Default is credentials.json.
 - --project_number: GCP project number (will be automatically fetched if not provided).
 - --additional_project_ids: A list of additional project IDs for which access will be granted(defaults to an empty list).
-- --no_ask: Enable interactive mode for confirmations before each step (default is false).
-Example :
+- --ignore_existing: In case of already existing resources, continue without ask (default is false).
+- --role: Specify role which will be granted (default is roles/viewer).
 
-bash
+- Example :
 
 ```bash
-python setup_wif.py --ask_confirm  enigma-123 us1 
+python setup_wif.py --ignore_existing  enigma-123 us1 
 ```

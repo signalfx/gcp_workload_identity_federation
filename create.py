@@ -7,7 +7,8 @@ REALMS_JSON = "realms.json"
 
 
 class WIFProvider:
-    def __init__(self, project_number, project_id, realm_name, auto_mode=False):
+    def __init__(self, project_number, project_id, realm_name, role, auto_mode=False):
+        self.role = role
         self.project_id = project_id
         self.auto_mode = auto_mode
         self.project_number = project_number
@@ -37,8 +38,8 @@ class WIFProvider:
 
 # AWS-specific WIF setup class
 class AWSWIFProvider(WIFProvider):
-    def __init__(self, project_number, project_id, realm_name, account_id, role_arn, auto_mode=False):
-        super().__init__(project_number, project_id, realm_name, auto_mode)
+    def __init__(self, project_number, project_id, realm_name, role, account_id, role_arn, auto_mode=False):
+        super().__init__(project_number, project_id, realm_name, role, auto_mode)
         self.account_id = account_id
         self.role_arn = role_arn
 
@@ -58,7 +59,7 @@ class AWSWIFProvider(WIFProvider):
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
-            "--role", "roles/viewer"
+            "--role", self.role
         ]
         run_command(command)
 
@@ -79,8 +80,8 @@ class AWSWIFProvider(WIFProvider):
 
 # GCP-specific WIF setup class
 class GCPWIFProvider(WIFProvider):
-    def __init__(self, project_number, project_id, realm_name, sa_email, auto_mode=False):
-        super().__init__(project_number,project_id, realm_name, auto_mode)
+    def __init__(self, project_number, project_id, realm_name, role, sa_email, auto_mode=False):
+        super().__init__(project_number,project_id, realm_name, role, auto_mode)
         self.sa_email = sa_email
 
     def create_provider(self):
@@ -100,7 +101,7 @@ class GCPWIFProvider(WIFProvider):
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
-            "--role", "roles/viewer"
+            "--role", self.role
         ]
         run_command(command)
 
@@ -193,13 +194,14 @@ class CustomArgumentParser(argparse.ArgumentParser):
 # Main function to handle the WIF setup for AWS
 def main():
     parser = CustomArgumentParser(REALMS_JSON, description="Setup GCP WIF for Splunk integrations.")
-    parser.add_argument("project_id", help="GCP project ID for which access will be granted")
+    parser.add_argument("project_id", help="GCP project ID for which WIF will be configured and assigned permissions")
     parser.add_argument("realm_name", help="Name of the realm on which integration is set up")
     parser.add_argument("--project_number", help="Numeric GCP project number (optional, fetched if not provided)")
     parser.add_argument("--output_file", help="Output file path for the credential config (default: credentials.json)",
                         default="credentials.json")
     parser.add_argument("--additional_project_ids", nargs='*', help="Optional list of additional project IDs for which access will be granted", default=[])
-    parser.add_argument("--no_ask", action="store_true", help="In case of already existing resources, continue without ask")
+    parser.add_argument("--ignore_existing", action="store_true", help="In case of already existing resources, continue without ask")
+    parser.add_argument("--role", help="Specify role which will be granted", default="roles/viewer")
 
     project_ids = []
     args = parser.parse_args()
@@ -207,7 +209,7 @@ def main():
     realm_name = args.realm_name
     project_number = args.project_number
     output_file = args.output_file
-    auto_mode = args.no_ask
+    auto_mode = args.ignore_existing
 
     project_ids.insert(0, project_id)
     project_ids = project_ids + args.additional_project_ids
@@ -231,9 +233,9 @@ def main():
     if realm_type == "aws":
         role_arn = realm_info["role"]
         account_id = extract_account_id(role_arn)
-        provider = AWSWIFProvider(project_number, project_id, realm_name, account_id, role_arn, auto_mode)
+        provider = AWSWIFProvider(project_number, project_id, realm_name, args.role, account_id, role_arn, auto_mode)
     else:
-        provider = GCPWIFProvider(project_number, project_id, realm_name, realm_info["sa_email"], auto_mode)
+        provider = GCPWIFProvider(project_number, project_id, realm_name, args.role, realm_info["sa_email"], auto_mode)
 
     step("Creating identity pool")
     provider.create_identity_pool()
