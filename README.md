@@ -19,7 +19,7 @@ This Python script automates the setup of **Google Cloud Workload Identity Feder
 Before running the script, ensure that the following are installed and configured:
 
 1. **Google Cloud SDK (`gcloud`)**:
-    - Install [gcloud SDK](https://cloud.google.com/sdk/docs/install) if you haven't already.
+    - Install [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/docs/install) if you haven't already.
     - Authenticate with your GCP account using:
       ```bash
       gcloud auth login
