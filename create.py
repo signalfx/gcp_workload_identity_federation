@@ -81,7 +81,7 @@ class AWSWIFProvider(WIFProvider):
 # GCP-specific WIF setup class
 class GCPWIFProvider(WIFProvider):
     def __init__(self, project_number, project_id, realm_name, gcp_role, sa_email, auto_mode=False):
-        super().__init__(project_number,project_id, realm_name, gcp_role, auto_mode)
+        super().__init__(project_number, project_id, realm_name, gcp_role, auto_mode)
         self.sa_email = sa_email
 
     def create_provider(self):
@@ -107,11 +107,10 @@ class GCPWIFProvider(WIFProvider):
 
     def create_cred_config(self, output_file):
         source_url = (f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?"
-                      f"audience=//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/"
-                      )
-        "gcloud"
+                      f"audience=//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/")
+
         command = [
-            "iam", "workload-identity-pools", "create-cred-config",
+            "gcloud", "iam", "workload-identity-pools", "create-cred-config",
             f"//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
             f"--credential-source-url={source_url}"
             f"{self.get_pool_id()}/providers/{self.get_provider_id()}",
@@ -189,6 +188,7 @@ class CustomArgumentParser(argparse.ArgumentParser):
         print("\nAvailable realms:")
         print(", ".join(load_realms(self.realm_file).keys()))
 
+
 # Main function to handle the WIF setup for AWS
 def main():
     parser = CustomArgumentParser(REALMS_JSON, description="Setup GCP WIF for Splunk Observability integrations and generate a config file")
@@ -197,7 +197,8 @@ def main():
     parser.add_argument("--project_number", help="Numeric GCP project number (optional, fetched if not provided)")
     parser.add_argument("--output_file", help="Output file path for the credential config (default: gcp_wif_config.json)",
                         default="gcp_wif_config.json")
-    parser.add_argument("--additional_project_ids", nargs='*', help="Optional list of additional project IDs for which access will be granted", default=[])
+    parser.add_argument("--additional_project_ids", nargs='*',
+                        help="Optional list of additional project IDs for which access will be granted", default=[])
     parser.add_argument("--ignore_existing", action="store_true", help="In case of already existing resources, continue without ask")
     parser.add_argument("--gcp_role", help="Specify role which will be granted", default="roles/viewer")
 
