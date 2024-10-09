@@ -42,8 +42,7 @@ You can run the script with the following arguments:
 Required Arguments:
 
 - project_id: The GCP project ID for which access will be granted
-- realm_name: [The Splunk Observability realm](https://dev.splunk.com/observability/docs/realms_in_endpoints/
-https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations
+- realm_name: [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations
 
 Optional Arguments:
 
