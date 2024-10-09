@@ -193,9 +193,9 @@ class CustomArgumentParser(argparse.ArgumentParser):
 
 # Main function to handle the WIF setup for AWS
 def main():
-    parser = CustomArgumentParser(REALMS_JSON, description="Setup GCP WIF for Splunk integrations.")
+    parser = CustomArgumentParser(REALMS_JSON, description="Setup GCP WIF for Splunk Observability integrations and generate a config file")
     parser.add_argument("project_id", help="GCP project ID for which WIF will be configured and assigned permissions")
-    parser.add_argument("realm_name", help="Name of the realm on which integration is set up")
+    parser.add_argument("realm_name", help="Name of your Splunk Observability realm")
     parser.add_argument("--project_number", help="Numeric GCP project number (optional, fetched if not provided)")
     parser.add_argument("--output_file", help="Output file path for the credential config (default: credentials.json)",
                         default="credentials.json")

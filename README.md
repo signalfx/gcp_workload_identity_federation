@@ -42,13 +42,14 @@ You can run the script with the following arguments:
 Required Arguments:
 
 - project_id: The GCP project ID for which access will be granted
-- realm_name: The realm to configure 
+- realm_name: [The Splunk Observability](https://dev.splunk.com/observability/docs/realms_in_endpoints/
+https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure 
 
 Optional Arguments:
 
 - --output_file_path: Path to save the credentials file. Default is credentials.json.
 - --project_number: GCP project number (will be automatically fetched if not provided).
-- --additional_project_ids: A list of additional project IDs for which access will be granted(defaults to an empty list).
+- --additional_project_ids: A list of additional project IDs for which access will be granted (defaults to an empty list).
 - --ignore_existing: In case of already existing resources, continue without ask (default is false).
 - --role: Specify role which will be granted (default is roles/viewer).
 
