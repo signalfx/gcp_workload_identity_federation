@@ -38,10 +38,10 @@ class WIFProvider:
 
 # AWS-specific WIF setup class
 class AWSWIFProvider(WIFProvider):
-    def __init__(self, project_number, project_id, realm_name, role, account_id, role_arn, auto_mode=False):
+    def __init__(self, project_number, project_id, realm_name, role, account_id, aws_role_arn, auto_mode=False):
         super().__init__(project_number, project_id, realm_name, role, auto_mode)
         self.account_id = account_id
-        self.role_arn = role_arn
+        self.aws_role_arn = aws_role_arn
 
     def create_provider(self):
         command = [
@@ -49,13 +49,13 @@ class AWSWIFProvider(WIFProvider):
             "--workload-identity-pool", self.get_pool_id(),
             "--account-id", self.account_id,
             "--location", "global",
-            f'--attribute-condition=attribute.aws_role in ["{self.role_arn}"]',
+            f'--attribute-condition=attribute.aws_role in ["{self.aws_role_arn}"]',
             "--project", self.project_id
         ]
         run_command(command, auto_mode=self.auto_mode)
 
     def add_iam_policy_binding(self, project_id):
-        member = f'principalSet://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/attribute.aws_role/{self.role_arn}'
+        member = f'principalSet://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/attribute.aws_role/{self.aws_role_arn}'
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
@@ -106,11 +106,14 @@ class GCPWIFProvider(WIFProvider):
         run_command(command)
 
     def create_cred_config(self, output_file):
+        source_url = (f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?"
+                      f"audience=//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/"
+                      )
+        "gcloud"
         command = [
-            "gcloud", "iam", "workload-identity-pools", "create-cred-config",
+            "iam", "workload-identity-pools", "create-cred-config",
             f"//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
-            f"--credential-source-url=http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity"
-            f"?format=full&audience=//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/"
+            f"--credential-source-url={source_url}"
             f"{self.get_pool_id()}/providers/{self.get_provider_id()}",
             "--credential-source-headers=Metadata-Flavor=Google",
             f"--output-file={output_file}"
@@ -184,21 +187,16 @@ class CustomArgumentParser(argparse.ArgumentParser):
     def print_help(self, *args, **kwargs):
         super().print_help(*args, **kwargs)
         print("\nAvailable realms:")
-        print(", ".join(self.load_realms().keys()))
-
-    def load_realms(self):
-        with open(self.realm_file, 'r') as f:
-            return json.load(f)
-
+        print(", ".join(load_realms(self.realm_file).keys()))
 
 # Main function to handle the WIF setup for AWS
 def main():
     parser = CustomArgumentParser(REALMS_JSON, description="Setup GCP WIF for Splunk Observability integrations and generate a config file")
     parser.add_argument("project_id", help="GCP project ID for which WIF will be configured and assigned permissions")
-    parser.add_argument("realm_name", help="Name of your Splunk Observability realm")
+    parser.add_argument("realm_name", help="Name of your Splunk Observability realm. It can be found at: User Profile -> Organizations")
     parser.add_argument("--project_number", help="Numeric GCP project number (optional, fetched if not provided)")
-    parser.add_argument("--output_file", help="Output file path for the credential config (default: credentials.json)",
-                        default="credentials.json")
+    parser.add_argument("--output_file", help="Output file path for the credential config (default: gcp_wif_config.json)",
+                        default="gcp_wif_config.json")
     parser.add_argument("--additional_project_ids", nargs='*', help="Optional list of additional project IDs for which access will be granted", default=[])
     parser.add_argument("--ignore_existing", action="store_true", help="In case of already existing resources, continue without ask")
     parser.add_argument("--role", help="Specify role which will be granted", default="roles/viewer")
@@ -231,9 +229,9 @@ def main():
         project_number = get_project_number(project_id)
 
     if realm_type == "aws":
-        role_arn = realm_info["role"]
-        account_id = extract_account_id(role_arn)
-        provider = AWSWIFProvider(project_number, project_id, realm_name, args.role, account_id, role_arn, auto_mode)
+        aws_role_arn = realm_info["role"]
+        account_id = extract_account_id(aws_role_arn)
+        provider = AWSWIFProvider(project_number, project_id, realm_name, args.role, account_id, aws_role_arn, auto_mode)
     else:
         provider = GCPWIFProvider(project_number, project_id, realm_name, args.role, realm_info["sa_email"], auto_mode)
 
