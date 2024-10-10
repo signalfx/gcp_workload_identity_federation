@@ -101,7 +101,7 @@ class GCPWIFProvider(WIFProvider):
             "--location", "global",
             "--issuer-uri", "https://accounts.google.com",
             "--attribute-mapping=google.subject=assertion.email",
-            f'--attribute-condition="google.subject in [\'{self.sa_email}\']"',
+            f'--attribute-condition=google.subject in [\'{self.sa_email}\']',
             "--project", self.project_id
         ]
         run_command(command, auto_mode=self.auto_mode)
