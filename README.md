@@ -36,6 +36,28 @@ Before running the script, ensure that the following are installed and configure
       python --version
       ```
 
+3. Permissions
+
+For create WIF resources you need these permissions:
+- iam.googleapis.com/workloadIdentityPoolProviders.create
+- iam.googleapis.com/workloadIdentityPoolProviders.delete
+- iam.googleapis.com/workloadIdentityPoolProviders.undelete
+- iam.googleapis.com/workloadIdentityPoolProviders.update
+- iam.googleapis.com/workloadIdentityPools.create
+- iam.googleapis.com/workloadIdentityPools.delete
+- iam.googleapis.com/workloadIdentityPools.undelete
+- iam.googleapis.com/workloadIdentityPools.update
+
+You can also use such predefined role:
+- roles/iam.workloadIdentityPoolAdmin
+
+
+You need to have also permission to create IAM binding, you need to have permission
+- resourcemanager.projects.setIamPolicy
+
+You can also use predefined role:
+- roles/resourcemanager.projectIamAdmin
+
 ## Running the Script
 You can run the script with the following arguments:
 
