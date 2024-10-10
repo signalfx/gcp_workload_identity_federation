@@ -5,7 +5,12 @@ import sys
 
 REALMS_JSON = "realms.json"
 
-
+def print_escaped(output_file):
+    with open(output_file, 'r') as file:
+        print("Escaped version:")
+        data = json.load(file)
+        inline_json = json.dumps(data, separators=(',', ':'))
+        print(json.dumps(inline_json))
 class WIFProvider:
     def __init__(self, project_number, project_id, realm_name, gcp_role, auto_mode=False):
         self.gcp_role = gcp_role
@@ -64,9 +69,10 @@ class AWSWIFProvider(WIFProvider):
         run_command(command)
 
     def create_cred_config(self, output_file):
+        print(self.project_number)
         command = [
             "gcloud", "iam", "workload-identity-pools", "create-cred-config",
-            f"//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
+            f"projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
             "--aws",
             f"--output-file={output_file}"
         ]
@@ -76,6 +82,8 @@ class AWSWIFProvider(WIFProvider):
         with open(output_file, 'r') as f:
             config_content = f.read()
             print(f"\nGenerated AWS Credential Config:\n{config_content}\n")
+
+        print_escaped(output_file)
 
 
 # GCP-specific WIF setup class
@@ -107,7 +115,7 @@ class GCPWIFProvider(WIFProvider):
 
     def create_cred_config(self, output_file):
         source_url = (f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?"
-                      f"audience=//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/")
+                      f"audience=projects/{self.project_number}/locations/global/workloadIdentityPools/")
 
         command = [
             "gcloud", "iam", "workload-identity-pools", "create-cred-config",
@@ -123,6 +131,8 @@ class GCPWIFProvider(WIFProvider):
         with open(output_file, 'r') as f:
             config_content = f.read()
             print(f"\nGenerated GCP Credential Config:\n{config_content}\n")
+
+        print_escaped(output_file)
 
 
 def run_command(command, auto_mode=False, verbose=True):
