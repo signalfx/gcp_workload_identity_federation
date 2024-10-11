@@ -38,7 +38,7 @@ Before running the script, ensure that the following are installed and configure
 
 3. Permissions
 
-For create WIF resources you need these permissions:
+To create WIF resources you need the following permissions:
 - iam.googleapis.com/workloadIdentityPoolProviders.create
 - iam.googleapis.com/workloadIdentityPoolProviders.delete
 - iam.googleapis.com/workloadIdentityPoolProviders.undelete
@@ -48,11 +48,11 @@ For create WIF resources you need these permissions:
 - iam.googleapis.com/workloadIdentityPools.undelete
 - iam.googleapis.com/workloadIdentityPools.update
 
-You can also use such predefined role:
+Alternatively, you can use the following predefined role:
 - roles/iam.workloadIdentityPoolAdmin
 
 
-You need to have also permission to create IAM binding, you need to have permission
+Additionally, you need the permission to create IAM bindings:
 - resourcemanager.projects.setIamPolicy
 
 You can also use predefined role:
