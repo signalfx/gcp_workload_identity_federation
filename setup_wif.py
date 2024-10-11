@@ -5,15 +5,6 @@ import sys
 
 REALMS_JSON = "realms.json"
 
-
-def print_escaped(output_file):
-    with open(output_file, 'r') as file:
-        print("Escaped version:")
-        data = json.load(file)
-        inline_json = json.dumps(data, separators=(',', ':'))
-        print(json.dumps(inline_json))
-
-
 class WIFProvider:
     def __init__(self, project_number, project_id, realm_name, gcp_role, auto_mode=False):
         self.gcp_role = gcp_role
@@ -85,8 +76,6 @@ class AWSWIFProvider(WIFProvider):
             config_content = f.read()
             print(f"\nGenerated AWS Credential Config:\n{config_content}\n")
 
-        print_escaped(output_file)
-
 
 # GCP-specific WIF setup class
 class GCPWIFProvider(WIFProvider):
@@ -125,6 +114,7 @@ class GCPWIFProvider(WIFProvider):
             f"--credential-source-url={source_url}"
             f"{self.get_pool_id()}/providers/{self.get_provider_id()}",
             "--credential-source-headers=Metadata-Flavor=Google",
+            "--format=yaml",
             f"--output-file={output_file}"
         ]
         run_command(command)
@@ -133,8 +123,6 @@ class GCPWIFProvider(WIFProvider):
         with open(output_file, 'r') as f:
             config_content = f.read()
             print(f"\nGenerated GCP Credential Config:\n{config_content}\n")
-
-        print_escaped(output_file)
 
 
 def run_command(command, auto_mode=False, verbose=True):
