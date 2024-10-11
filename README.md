@@ -74,7 +74,7 @@ Optional Arguments:
 - --ignore_existing: In case of already existing resources, continue without ask (default is false).
 - --role: Specify role which will be granted (default is roles/viewer).
 
-- Example :
+- Example:
 
 ```bash
 python setup_wif.py --ignore_existing  enigma-123 us1 
