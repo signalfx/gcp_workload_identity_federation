@@ -6,11 +6,10 @@ This Python script automates the setup of **Google Cloud Workload Identity Feder
 - IAM Policy Bindings
 
 ## Features
-- Support setting up on GCP or AWS Splunk realms
+- Supports setting up on GCP or AWS Splunk realms
 - Allows switching between two modes:
     1. **Automatic mode**: Runs all steps without interruption.
-    2. **Interactive mode**: Asks for confirmation when resource already exists.
-- Retrieves **AWS account ID** from the provided role ARN.
+    2. **Interactive mode**: Asks for confirmation when a resource already exists.
 - **Fetches GCP project number** automatically if not provided.
 - Generates **credentials configuration file** for the identity federation.
 
@@ -74,8 +73,8 @@ Optional Arguments:
 - --ignore_existing: In case of already existing resources, continue without ask (default is false).
 - --role: Specify role which will be granted (default is roles/viewer).
 
-- Example:
+Example:
 
 ```bash
-python setup_wif.py --ignore_existing  enigma-123 us1 
+python setup_wif.py --ignore_existing enigma-123 us1 
 ```
