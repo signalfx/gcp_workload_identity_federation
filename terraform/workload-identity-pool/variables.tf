@@ -27,7 +27,13 @@ variable "aws_realms" {
     role_arn = string
   }))
   default = {
-    aws5 = { role_arn = "arn:aws:sts::134183635603:assumed-role/eks-lab0-cloud-metric-syncer" }
+    us0 = { role_arn = "arn:aws:sts::134183635603:assumed-role/us0-splunk-observability" }
+    us1 = { role_arn = "arn:aws:sts::562691491210:assumed-role/us1-splunk-observability" }
+    jp0 = { role_arn = "arn:aws:sts::947592474007:assumed-role/jp0-splunk-observability" }
+    au0 = { role_arn = "arn:aws:sts::642047998396:assumed-role/au0-splunk-observability" }
+    eu0 = { role_arn = "arn:aws:sts::214014584948:assumed-role/eu0-splunk-observability" }
+    eu1 = { role_arn = "arn:aws:sts::797571435910:assumed-role/eu1-splunk-observability" }
+    eu2 = { role_arn = "arn:aws:sts::417715959474:assumed-role/eu2-splunk-observability" }
   }
 }
 
@@ -37,9 +43,11 @@ variable "gcp_realms" {
     sa_email = string
   }))
   default = {
-    gcp5 = { sa_email = "imm-cloud-metric-sync-non-aws@lab1-env-716.iam.gserviceaccount.com" }
+    us2 = { sa_email = "splunk-observability@us2-env-181.iam.gserviceaccount.com" }
   }
 }
+
+
 
 data "google_project" "selected" {
   project_id = var.project_id
