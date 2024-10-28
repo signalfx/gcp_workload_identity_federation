@@ -1,6 +1,6 @@
 # WIF Terraform Module
 
-This Terraform module automates the setup of **Google Cloud Workload Identity Federation** for Splunk integrations. It manages:
+This Terraform module automates the setup of **Google Cloud Workload Identity Federation** for Splunk Observability GCP integrations. It manages:
 - Workload Identity Pools
 - Identity Providers
 - IAM Policy Bindings

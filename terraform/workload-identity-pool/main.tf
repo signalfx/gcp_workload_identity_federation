@@ -61,7 +61,7 @@ resource "null_resource" "generate_credentials_aws" {
   provisioner "local-exec" {
     command = <<EOT
     mkdir -p ./out
-    echo "Issuing gcloud command to create credential file at path ./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
+    echo "Issuing gcloud command to create config file at path ./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
     gcloud iam workload-identity-pools create-cred-config \
     projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.aws_provider[0].workload_identity_pool_provider_id} \
     --aws \
@@ -80,7 +80,7 @@ resource "null_resource" "generate_credentials_gcp" {
   provisioner "local-exec" {
     command = <<EOT
     mkdir -p ./out
-    echo "Issuing gcloud command to create credential file at path ./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
+    echo "Issuing gcloud command to create config file at path ./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
     gcloud iam workload-identity-pools create-cred-config \
     projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.gcp_provider[0].workload_identity_pool_provider_id} \
    --credential-source-url=http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.gcp_provider[0].workload_identity_pool_provider_id} \
