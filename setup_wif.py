@@ -3,7 +3,7 @@ import json
 import argparse
 import sys
 
-REALMS_JSON = "terraform/workload-identity-pool/realms.json"
+REALMS_JSON = "realms.json"
 
 class WIFProvider:
     def __init__(self, project_number, project_id, realm_name, gcp_role, auto_mode=False):
