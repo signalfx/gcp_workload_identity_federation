@@ -56,16 +56,16 @@ resource "google_project_iam_binding" "binding_additional" {
   ]
 }
 
-resource "null_resource" "generate_credentials_aws" {
+resource "null_resource" "generate_config_aws" {
   count = local.is_aws_realm ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
     mkdir -p ./out
-    echo "Issuing gcloud command to create config file at path ./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
+    echo "Issuing gcloud command to create config file at path ./out/wif-config-${var.realm_name}-${var.project_id}.json"
     gcloud iam workload-identity-pools create-cred-config \
     projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.aws_provider[0].workload_identity_pool_provider_id} \
     --aws \
-    --output-file=./out/wif-credentials-${var.realm_name}-${var.project_id}.json
+    --output-file=./out/wif-config-${var.realm_name}-${var.project_id}.json
     EOT
 
   }
@@ -75,17 +75,17 @@ resource "null_resource" "generate_credentials_aws" {
   }
 }
 
-resource "null_resource" "generate_credentials_gcp" {
+resource "null_resource" "generate_config_gcp" {
   count = local.is_aws_realm ? 0 : 1
   provisioner "local-exec" {
     command = <<EOT
     mkdir -p ./out
-    echo "Issuing gcloud command to create config file at path ./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
+    echo "Issuing gcloud command to create config file at path ./out/wif-config-${var.realm_name}-${var.project_id}.json"
     gcloud iam workload-identity-pools create-cred-config \
     projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.gcp_provider[0].workload_identity_pool_provider_id} \
    --credential-source-url=http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.gcp_provider[0].workload_identity_pool_provider_id} \
     --credential-source-headers=Metadata-Flavor=Google \
-    --output-file=./out/wif-credentials-${var.realm_name}-${var.project_id}.json
+    --output-file=./out/wif-config-${var.realm_name}-${var.project_id}.json
     EOT
 
   }
@@ -94,21 +94,21 @@ resource "null_resource" "generate_credentials_gcp" {
   }
 }
 
-data "local_file" "generated_aws_credentials" {
+data "local_file" "generated_aws_config" {
   count      = local.is_aws_realm ? 1 : 0
   depends_on = [
-    null_resource.generate_credentials_aws, google_project_iam_binding.binding_additional, google_project_iam_binding.binding_main
+    null_resource.generate_config_aws, google_project_iam_binding.binding_additional, google_project_iam_binding.binding_main
   ]
-  filename   = "./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
+  filename   = "./out/wif-config-${var.realm_name}-${var.project_id}.json"
 }
 
-data "local_file" "generated_gcp_credentials" {
+data "local_file" "generated_gcp_config" {
   count      = local.is_aws_realm ? 0 : 1
   depends_on = [
-    null_resource.generate_credentials_gcp, google_project_iam_binding.binding_additional, google_project_iam_binding.binding_main
+    null_resource.generate_config_gcp, google_project_iam_binding.binding_additional, google_project_iam_binding.binding_main
   ]
-  filename   = "./out/wif-credentials-${var.realm_name}-${var.project_id}.json"
+  filename   = "./out/wif-config-${var.realm_name}-${var.project_id}.json"
 }
-output "credentials_file_content" {
-  value = local.is_aws_realm ? data.local_file.generated_aws_credentials[0].content : data.local_file.generated_gcp_credentials[0].content
+output "config_file_content" {
+  value = local.is_aws_realm ? data.local_file.generated_aws_config[0].content : data.local_file.generated_gcp_config[0].content
 }
