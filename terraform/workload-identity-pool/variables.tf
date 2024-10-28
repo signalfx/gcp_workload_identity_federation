@@ -35,7 +35,7 @@ variable "role" {
 variable "custom_realms_config_path" {
   description = "Path of realms config"
   type        = string
-default = ""
+  default     = ""
 }
 
 data "google_project" "selected" {
@@ -43,6 +43,6 @@ data "google_project" "selected" {
 }
 
 locals {
-  realms_config_path =  length(var.custom_realms_config_path) > 0 ? var.custom_realms_config_path : "${path.module}/realms.json"
+  realms_config_path = length(var.custom_realms_config_path) > 0 ? var.custom_realms_config_path : "${path.module}/realms.json"
   realms_config      = jsondecode(file(local.realms_config_path))
 }
