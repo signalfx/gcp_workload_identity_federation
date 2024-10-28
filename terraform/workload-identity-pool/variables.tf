@@ -22,7 +22,7 @@ variable "additional_project_ids" {
 }
 
 variable "realm_name" {
-  description = "The Splunk Observability realm. It can be found at: User Profile -> Organizations".
+  description = "The Splunk Observability realm. It can be found at: User Profile -> Organizations"
   type        = string
 }
 
