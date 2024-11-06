@@ -111,7 +111,7 @@ class GCPWIFProvider(WIFProvider):
 
         command = [
             "gcloud", "iam", "workload-identity-pools", "create-cred-config",
-            f"//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
+            f"projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
             f"--credential-source-url={source_url}"
             "--credential-source-headers=Metadata-Flavor=Google",
             "--format=yaml",
