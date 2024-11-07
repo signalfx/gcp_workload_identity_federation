@@ -72,6 +72,8 @@ Optional Arguments:
 - --additional_project_ids: A list of additional project IDs for which access will be granted (defaults to an empty list).
 - --ignore_existing: In case of already existing resources, continue without ask (default is false).
 - --role: Specify role which will be granted (default is roles/viewer).
+- --pool_name: Custom workload identity pool name (default is splunk-identity-pool).
+- --provider_name: Custom workload identity provider name (default is splunk-provider).
 
 Example:
 
