@@ -106,13 +106,13 @@ class GCPWIFProvider(WIFProvider):
 
     def create_cred_config(self, output_file):
         source_url = (f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?"
-                      f"audience=projects/{self.project_number}/locations/global/workloadIdentityPools/"
+                      f"audience=//iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/"
                       f"{self.get_pool_id()}/providers/{self.get_provider_id()}")
 
         command = [
             "gcloud", "iam", "workload-identity-pools", "create-cred-config",
             f"projects/{self.project_number}/locations/global/workloadIdentityPools/{self.get_pool_id()}/providers/{self.get_provider_id()}",
-            f"--credential-source-url={source_url}"
+            f"--credential-source-url={source_url}",
             "--credential-source-headers=Metadata-Flavor=Google",
             "--format=yaml",
             f"--output-file={output_file}"
