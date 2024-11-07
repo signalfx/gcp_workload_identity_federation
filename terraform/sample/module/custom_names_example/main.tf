@@ -1,5 +1,5 @@
 module "example_aws_pool_1" {
-  source = "../../workload-identity-pool"
+  source = "../../../modules/workload-identity-pool"
 
   project_id             = "my-project-id"
   realm_name             = "us0"
@@ -17,7 +17,7 @@ resource "signalfx_gcp_integration" "integration1" {
   auth_method  = "WORKLOAD_IDENTITY_FEDERATION"
   project_wif_configs {
     project_id = "my-project-id"
-    wif_config = module.example_aws_pool_1.config_file_content
+    wif_config = module.example_aws_pool_1.credentials_config
 
   }
 }

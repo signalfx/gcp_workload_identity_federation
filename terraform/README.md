@@ -1,63 +1,32 @@
-# WIF Terraform Module
+# Workload Identity Federation (WIF) Terraform Setup
 
-This Terraform module automates the setup of **Google Cloud Workload Identity Federation** for Splunk Observability GCP integrations. It manages:
-- Workload Identity Pools
-- Identity Providers
-- IAM Policy Bindings
-- Generate WIF configuration file
+This section provides two approaches to setting up Workload Identity Federation in GCP using Terraform:
 
-## Prerequisites
+- **Using the workload-identity-pool module**
+- **Using GCP provider resources**
 
-Before running the script, ensure that the following are installed and configured:
+## Using the workload-identity-pool Module
 
-1. **Google Cloud SDK (`gcloud`)**:
-    - Install [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/docs/install) if you haven't already.
-    - Authenticate with your GCP account using:
-      ```bash
-      gcloud auth login
-      ```
-    - Set the active project:
-      ```bash
-      gcloud config set project YOUR_PROJECT_ID
-      ```
+For more details on the module, refer to the [module README.md](modules/README.md).
 
-3. Permissions
+To see usage examples, visit the [samples](sample/module) directory.
 
-To create WIF resources you need the following permissions:
-- iam.googleapis.com/workloadIdentityPoolProviders.create
-- iam.googleapis.com/workloadIdentityPoolProviders.delete
-- iam.googleapis.com/workloadIdentityPoolProviders.undelete
-- iam.googleapis.com/workloadIdentityPoolProviders.update
-- iam.googleapis.com/workloadIdentityPools.create
-- iam.googleapis.com/workloadIdentityPools.delete
-- iam.googleapis.com/workloadIdentityPools.undelete
-- iam.googleapis.com/workloadIdentityPools.update
+## Using GCP Provider Resources
 
-Alternatively, you can use the following predefined role:
-- roles/iam.workloadIdentityPoolAdmin
+Setup varies depending on the realm of your integration:
+
+- For the **us2 realm**, see the [us2 sample](sample/us2).
+- For **other realms** (e.g., us0), see the [us0 sample](sample/us0).
+
+For realms other than us2, ensure the `splunk_role_arn` variable is set to the correct value.
 
 
-Additionally, you need the permission to create IAM bindings:
-- resourcemanager.projects.setIamPolicy
-
-You can also use predefined role:
-- roles/resourcemanager.projectIamAdmin
-
-## Module variables
-
-- project_id (string, required): The GCP project ID.
-- realm_name (string, required):  [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations.
-- additional_project_ids (list(string), optional, default: []): A list of additional project IDs for which access will be granted (IAM bindings will be added)
-- role (string, optional, default: "roles/viewer"): The IAM role which will be granted.
-- custom_pool_name (string, optional, default: ""): Custom name for the Workload Identity Pool. If not provided, a default name will be generated based on the realm name.
-- custom_provider_name (string, optional, default: ""): Custom name for the Workload Identity Provider. If not provided, a default name will be generated based on the realm name. 
-
-## Outputs
-
-config_file_content: Content of the generated config file for Workload Identity Federation. It could be used to set up integration
-
-## Notes
-
-- When you create IAM binding and Splunk integration in one terraform apply, it may occasionally fail with an error indicating that certain permissions are missing (e.g., monitoring.metricDescriptors.list, compute.instances.list). 
-This is likely due to IAM roles taking some time to propagate. In such cases, re-running the terraform apply command usually resolves the issue.
-- Temporary Files Location: This module writes temporary config file to a dedicated subdirectory (./out) within the working directory. 
+| Realm | splunk_role_arn |
+|-------|------|
+| us0   | arn:aws:sts::134183635603:assumed-role/us0-splunk-observability |
+| us1   | arn:aws:sts::562691491210:assumed-role/us1-splunk-observability |
+| jp0   | arn:aws:sts::947592474007:assumed-role/jp0-splunk-observability |
+| au0   | arn:aws:sts::642047998396:assumed-role/au0-splunk-observability |
+| eu0   | arn:aws:sts::214014584948:assumed-role/eu0-splunk-observability |
+| eu1   | arn:aws:sts::797571435910:assumed-role/eu1-splunk-observability |
+| eu2   | arn:aws:sts::417715959474:assumed-role/eu2-splunk-observability |

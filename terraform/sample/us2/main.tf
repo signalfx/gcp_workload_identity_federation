@@ -12,14 +12,12 @@ terraform {
 }
 
 provider "google" {
-  credentials = file("/Users/penglert/.config/gcloud/legacy_credentials/penglert@splunkcloud.com/adc.json") # Optional if using default auth
-  project     = "molten-enigma-184614"
+  project     = "<project-id"
 }
 
 provider signalfx {
-  auth_token = "c9TxpZ7mNsLdxEpyaMCNlQ"
-  api_url = "https://app.lab1.signalfx.com"
-  timeout_seconds = 600
+  auth_token = "<token>"
+  api_url = "<url>"
 }
 locals{
   credentials_config = jsonencode({
@@ -29,7 +27,10 @@ locals{
     "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
     "token_url": "https://sts.googleapis.com/v1/token",
     "credential_source": {
-      "url": "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.gcp_provider.workload_identity_pool_provider_id}--credential-source-headers=Metadata-Flavor=Google"
+      "url": "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=//iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.gcp_provider.workload_identity_pool_provider_id}",
+      "headers": {
+        "Metadata-Flavor": "Google"
+      }
     },
     "token_info_url": "https://sts.googleapis.com/v1/introspect"
   })
@@ -63,7 +64,6 @@ resource "google_project_iam_member" "member" {
   role    = var.role
   member  = "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${var.sa_email}"
 }
-
 
 resource "signalfx_gcp_integration" "example_integration" {
   name = "Using WIF"
