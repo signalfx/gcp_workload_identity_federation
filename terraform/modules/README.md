@@ -54,10 +54,9 @@ You can also use predefined role:
 
 ## Outputs
 
-config_file_content: Content of the generated config file for Workload Identity Federation. It could be used to set up integration
+credentials_config: Content of the generated config for Workload Identity Federation. It could be used to set up integration
 
 ## Notes
 
 - When you create IAM binding and Splunk integration in one terraform apply, it may occasionally fail with an error indicating that certain permissions are missing (e.g., monitoring.metricDescriptors.list, compute.instances.list). 
 This is likely due to IAM roles taking some time to propagate. In such cases, re-running the terraform apply command usually resolves the issue.
-- Temporary Files Location: This module writes temporary config file to a dedicated subdirectory (./out) within the working directory. 
