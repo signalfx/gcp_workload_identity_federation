@@ -28,32 +28,20 @@ resource "google_iam_workload_identity_pool_provider" "gcp_provider" {
   attribute_mapping         = {
     "google.subject" = "assertion.email"
   }
-  attribute_condition  = "google.subject == \"${local.realms_config[var.realm_name]["sa_email"]}\""
+  attribute_condition                = "google.subject == \"${local.realms_config[var.realm_name]["sa_email"]}\""
   workload_identity_pool_provider_id = local.provider_id
   oidc {
     issuer_uri = "https://accounts.google.com"
   }
 }
 
-resource "google_project_iam_binding" "binding_main" {
-  project = var.project_id
-  role    = var.role
-  members = [
-    local.is_aws_realm ?
-    "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${local.realms_config[var.realm_name]["role"]}" :
-    "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${local.realms_config[var.realm_name]["sa_email"]}"
-  ]
-}
-
-resource "google_project_iam_binding" "binding_additional" {
-  for_each = toset(var.additional_project_ids)
+resource "google_project_iam_member" "member" {
+  for_each = toset(concat(var.additional_project_ids, [var.project_id]))
   project  = each.value
   role     = var.role
-  members  = [
-    local.is_aws_realm ?
-    "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${local.realms_config[var.realm_name]["role"]}" :
-    "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${local.realms_config[var.realm_name]["sa_email"]}"
-  ]
+  member   = local.is_aws_realm ?
+  "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${local.realms_config[var.realm_name]["role"]}" :
+  "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${local.realms_config[var.realm_name]["sa_email"]}"
 }
 
 resource "null_resource" "generate_config_aws" {
@@ -97,17 +85,17 @@ resource "null_resource" "generate_config_gcp" {
 data "local_file" "generated_aws_config" {
   count      = local.is_aws_realm ? 1 : 0
   depends_on = [
-    null_resource.generate_config_aws, google_project_iam_binding.binding_additional, google_project_iam_binding.binding_main
+    null_resource.generate_config_aws, google_project_iam_member.member
   ]
-  filename   = "./out/wif-config-${var.realm_name}-${var.project_id}.json"
+  filename = "./out/wif-config-${var.realm_name}-${var.project_id}.json"
 }
 
 data "local_file" "generated_gcp_config" {
   count      = local.is_aws_realm ? 0 : 1
   depends_on = [
-    null_resource.generate_config_gcp, google_project_iam_binding.binding_additional, google_project_iam_binding.binding_main
+    null_resource.generate_config_gcp, google_project_iam_member.member
   ]
-  filename   = "./out/wif-config-${var.realm_name}-${var.project_id}.json"
+  filename = "./out/wif-config-${var.realm_name}-${var.project_id}.json"
 }
 output "config_file_content" {
   value = local.is_aws_realm ? data.local_file.generated_aws_config[0].content : data.local_file.generated_gcp_config[0].content
