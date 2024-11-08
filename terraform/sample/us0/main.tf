@@ -47,7 +47,7 @@ resource "google_iam_workload_identity_pool" "identity_pool" {
 }
 
 
-resource "google_iam_workload_identity_pool_provider" "provier" {
+resource "google_iam_workload_identity_pool_provider" "provider" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = var.provider_name
   attribute_condition                = "attribute.aws_role == \"${var.splunk_role_arn}\""

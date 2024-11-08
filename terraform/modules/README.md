@@ -45,16 +45,16 @@ You can also use predefined role:
 
 ## Module variables
 
-- project_id (string, required): The GCP project ID.
-- realm_name (string, required):  [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations.
-- additional_project_ids (list(string), optional, default: []): A list of additional project IDs for which access will be granted (IAM bindings will be added)
-- role (string, optional, default: "roles/viewer"): The IAM role which will be granted.
-- custom_pool_name (string, optional, default: ""): Custom name for the Workload Identity Pool. If not provided, a default name will be generated based on the realm name.
-- custom_provider_name (string, optional, default: ""): Custom name for the Workload Identity Provider. If not provided, a default name will be generated based on the realm name. 
+- `project_id` (string, required): The GCP project ID.
+- `realm_name` (string, required):  [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations.
+- `additional_project_ids` (list(string), optional, default: []): A list of additional project IDs for which access will be granted (IAM bindings will be added)
+- `role` (string, optional, default: "roles/viewer"): The IAM role which will be granted.
+- `custom_pool_name` (string, optional, default: ""): Custom name for the Workload Identity Pool. If not provided, a default name will be generated based on the realm name.
+- `custom_provider_name` (string, optional, default: ""): Custom name for the Workload Identity Provider. If not provided, a default name will be generated based on the realm name. 
 
 ## Outputs
 
-credentials_config: Content of the generated config for Workload Identity Federation. It could be used to set up integration
+`credentials_config`: Content of the generated config for Workload Identity Federation. It can be used to set up the integration
 
 ## Notes
 

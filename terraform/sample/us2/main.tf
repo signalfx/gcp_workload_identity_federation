@@ -12,7 +12,7 @@ terraform {
 }
 
 provider "google" {
-  project     = "<project-id"
+  project     = "<project-id>"
 }
 
 provider signalfx {

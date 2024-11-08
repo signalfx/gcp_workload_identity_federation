@@ -38,42 +38,43 @@ Before running the script, ensure that the following are installed and configure
 3. Permissions
 
 To create WIF resources you need the following permissions:
-- iam.googleapis.com/workloadIdentityPoolProviders.create
-- iam.googleapis.com/workloadIdentityPoolProviders.delete
-- iam.googleapis.com/workloadIdentityPoolProviders.undelete
-- iam.googleapis.com/workloadIdentityPoolProviders.update
-- iam.googleapis.com/workloadIdentityPools.create
-- iam.googleapis.com/workloadIdentityPools.delete
-- iam.googleapis.com/workloadIdentityPools.undelete
-- iam.googleapis.com/workloadIdentityPools.update
-
+```
+iam.googleapis.com/workloadIdentityPoolProviders.create
+iam.googleapis.com/workloadIdentityPoolProviders.delete
+iam.googleapis.com/workloadIdentityPoolProviders.undelete
+iam.googleapis.com/workloadIdentityPoolProviders.update
+iam.googleapis.com/workloadIdentityPools.create
+iam.googleapis.com/workloadIdentityPools.delete
+iam.googleapis.com/workloadIdentityPools.undelete
+iam.googleapis.com/workloadIdentityPools.update
+```
 Alternatively, you can use the following predefined role:
-- roles/iam.workloadIdentityPoolAdmin
+- `roles/iam.workloadIdentityPoolAdmin`
 
 
 Additionally, you need the permission to create IAM bindings:
-- resourcemanager.projects.setIamPolicy
+- `resourcemanager.projects.setIamPolicy`
 
 You can also use predefined role:
-- roles/resourcemanager.projectIamAdmin
+- `roles/resourcemanager.projectIamAdmin`
 
 ## Running the Script
 You can run the script with the following arguments:
 
 Required Arguments:
 
-- project_id: The GCP project ID for which access will be granted.
-- realm_name: [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations.
+- `project_id`: The GCP project ID for which access will be granted.
+- `realm_name`: [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations.
 
 Optional Arguments:
 
-- --output_file_path: Path to save the credentials file. Default is gcp_wif_config.json.
-- --project_number: GCP project number (will be automatically fetched if not provided).
-- --additional_project_ids: A list of additional project IDs for which access will be granted (defaults to an empty list).
-- --ignore_existing: In case of already existing resources, continue without ask (default is false).
-- --role: Specify role which will be granted (default is roles/viewer).
-- --pool_name: Custom workload identity pool name (default is splunk-identity-pool).
-- --provider_name: Custom workload identity provider name (default is splunk-provider).
+- `--output_file_path`: Path to save the credentials file. Default is gcp_wif_config.json.
+- `--project_number`: GCP project number (will be automatically fetched if not provided).
+- `--additional_project_ids`: A list of additional project IDs for which access will be granted (defaults to an empty list).
+- `--ignore_existing`: In case of already existing resources, continue without ask (default is false).
+- `--role`: Specify role which will be granted (default is roles/viewer).
+- `--pool_name`: Custom workload identity pool name (default is splunk-identity-pool).
+- `--provider_name`: Custom workload identity provider name (default is splunk-provider).
 
 Example:
 
