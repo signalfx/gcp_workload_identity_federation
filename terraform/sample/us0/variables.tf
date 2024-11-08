@@ -30,4 +30,5 @@ variable "role" {
 variable "splunk_role_arn" {
   description = "ARN of Splunk observability AWS role, it can be found in documentation"
   type        = string
+  default     = "arn:aws:sts::134183635603:assumed-role/us0-splunk-observability"
 }

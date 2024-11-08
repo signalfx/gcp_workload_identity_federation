@@ -15,10 +15,14 @@ To see usage examples, visit the [samples](sample/module) directory.
 
 Setup varies depending on the realm of your integration:
 
-- For the **us2 realm**, see the [us2 sample](sample/us2).
-- For **other realms** (e.g., us0), see the [us0 sample](sample/us0).
+- For the **us2 realm**, see the [us2 sample](sample/us2). It uses in assertion service account email
 
-For realms other than us2, ensure the `splunk_role_arn` variable is set to the correct value.
+| Realm | sa_email                                                  |
+|-------|-----------------------------------------------------------|
+| us2   | splunk-observability@us2-env-181.iam.gserviceaccount.com  |
+
+
+- For **other realms** (e.g., us0), see the [us0 sample](sample/us0). Please ensure `splunk_role_arn` variable is set to the correct value, depending on realm.
 
 
 | Realm | splunk_role_arn |

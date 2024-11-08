@@ -30,4 +30,5 @@ variable "role" {
 variable "sa_email" {
   description = "Email of  of Splunk observability Service Account, can be found in a doc"
   type        = string
+  default     = "splunk-observability@us2-env-181.iam.gserviceaccount.com"
 }
