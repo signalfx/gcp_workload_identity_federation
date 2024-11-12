@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import subprocess
 import json
 import argparse
@@ -6,14 +7,14 @@ import sys
 REALMS_JSON = "../realms.json"
 
 class WIFProvider:
-    def __init__(self, project_number, project_id, realm_name, gcp_role, pool_name, provider_name, auto_mode=False):
-        self.gcp_role = gcp_role
+    def __init__(self, project_number, project_id, realm_name, pool_name, provider_name, auto_mode=False, dry_run=False):
         self.project_id = project_id
         self.auto_mode = auto_mode
         self.project_number = project_number
         self.realm_name = realm_name
         self.pool_name = pool_name
         self.provider_name = provider_name
+        self.dry_run = dry_run
 
     def create_identity_pool(self):
         command = [
@@ -22,7 +23,7 @@ class WIFProvider:
             "--location", "global",
             "--display-name", self.pool_name
         ]
-        run_command(command, auto_mode=self.auto_mode)
+        run_command(command, auto_mode=self.auto_mode, dry_run=self.dry_run)
 
     def add_iam_policy_binding(self, project_id):
         raise NotImplementedError("This method should be implemented by subclasses.")
@@ -34,8 +35,8 @@ class WIFProvider:
 
 # AWS-specific WIF setup class
 class AWSWIFProvider(WIFProvider):
-    def __init__(self, project_number, project_id, realm_name, gcp_role, account_id, aws_role_arn, pool_name, provider_name, auto_mode=False):
-        super().__init__(project_number, project_id, realm_name, gcp_role, pool_name, provider_name, auto_mode)
+    def __init__(self, project_number, project_id, realm_name, account_id, aws_role_arn, pool_name, provider_name, auto_mode=False, dry_run=False):
+        super().__init__(project_number, project_id, realm_name, pool_name, provider_name, auto_mode, dry_run)
         self.account_id = account_id
         self.aws_role_arn = aws_role_arn
 
@@ -48,16 +49,16 @@ class AWSWIFProvider(WIFProvider):
             f'--attribute-condition=attribute.aws_role in ["{self.aws_role_arn}"]',
             "--project", self.project_id
         ]
-        run_command(command, auto_mode=self.auto_mode)
+        run_command(command, auto_mode=self.auto_mode, dry_run=self.dry_run)
 
-    def add_iam_policy_binding(self, project_id):
+    def add_iam_policy_binding(self, project_id, role):
         member = f'principalSet://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.pool_name}/attribute.aws_role/{self.aws_role_arn}'
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
-            "--role", self.gcp_role
+            "--role", role
         ]
-        run_command(command)
+        run_command(command, dry_run=self.dry_run)
 
     def create_cred_config(self, output_file):
         command = [
@@ -66,18 +67,17 @@ class AWSWIFProvider(WIFProvider):
             "--aws",
             f"--output-file={output_file}"
         ]
-        run_command(command)
-
-        # Print the contents of the output file
-        with open(output_file, 'r') as f:
-            config_content = f.read()
-            print(f"\nGenerated AWS Credential Config:\n{config_content}\n")
+        run_command(command, dry_run=self.dry_run)
+        if not self.dry_run:
+            with open(output_file, 'r') as f:
+                config_content = f.read()
+                print(f"\nGenerated AWS Credential Config:\n{config_content}\n")
 
 
 # GCP-specific WIF setup class
 class GCPWIFProvider(WIFProvider):
-    def __init__(self, project_number, project_id, realm_name, gcp_role, sa_email, pool_name, provider_name, auto_mode=False):
-        super().__init__(project_number, project_id, realm_name, gcp_role, pool_name, provider_name, auto_mode)
+    def __init__(self, project_number, project_id, realm_name, sa_email, pool_name, provider_name, auto_mode=False, dry_run=False):
+        super().__init__(project_number, project_id, realm_name, pool_name, provider_name, auto_mode, dry_run)
         self.sa_email = sa_email
 
     def create_provider(self):
@@ -90,16 +90,16 @@ class GCPWIFProvider(WIFProvider):
             f'--attribute-condition=google.subject in [\'{self.sa_email}\']',
             "--project", self.project_id
         ]
-        run_command(command, auto_mode=self.auto_mode)
+        run_command(command, auto_mode=self.auto_mode, dry_run=self.dry_run)
 
-    def add_iam_policy_binding(self, project_id):
+    def add_iam_policy_binding(self, project_id, role):
         member = f'principal://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.pool_name}/subject/{self.sa_email}'
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
-            "--role", self.gcp_role
+            "--role", role
         ]
-        run_command(command)
+        run_command(command, dry_run=self.dry_run)
 
     def create_cred_config(self, output_file):
         source_url = (f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?"
@@ -114,16 +114,19 @@ class GCPWIFProvider(WIFProvider):
             "--format=yaml",
             f"--output-file={output_file}"
         ]
-        run_command(command)
+        run_command(command, dry_run=self.dry_run)
 
-        # Print the contents of the output file
-        with open(output_file, 'r') as f:
-            config_content = f.read()
-            print(f"\nGenerated GCP Credential Config:\n{config_content}\n")
+        if not self.dry_run:
+            with open(output_file, 'r') as f:
+                config_content = f.read()
+                print(f"\nGenerated GCP Credential Config:\n{config_content}\n")
 
 
-def run_command(command, auto_mode=False, verbose=True):
+def run_command(command, auto_mode=False, verbose=True, dry_run=False):
     command_str = ' '.join(command)
+    if dry_run:
+        print(f"Command: \n{command_str}")
+        return True
     print(f"Executing command: \n{command_str}") if verbose else None
     try:
         result = subprocess.run(command, check=True, capture_output=True, text=True)
@@ -194,12 +197,14 @@ def main():
     parser.add_argument("--project_number", help="Numeric GCP project number (optional, fetched if not provided)")
     parser.add_argument("--output_file", help="Output file path for the credential config (default: gcp_wif_config.json)",
                         default="gcp_wif_config.json")
-    parser.add_argument("--additional_project_ids", nargs='*',
-                        help="Optional list of additional project IDs for which access will be granted", default=[])
+    parser.add_argument("--additional_project_id", action='append', default=None,
+                        help="Optional list of additional project IDs for which access will be granted. You can provide multiple roles by repeating --additional_project_id")
     parser.add_argument("--ignore_existing", action="store_true", help="In case of already existing resources, continue without ask")
-    parser.add_argument("--gcp_role", help="Specify role which will be granted", default="roles/viewer")
+    parser.add_argument("--gcp_role", default=None, action='append',
+                        help="Specify role which will be granted. You can provide multiple roles by repeating --gcp_role. By default it uses 'roles/viewer'")
     parser.add_argument("--pool_name", help="Custom workload identity pool name", default="splunk-identity-pool")
     parser.add_argument("--provider_name", help="Custom workload identity provider name", default="splunk-provider")
+    parser.add_argument("--dry_run", help="Just print what commands will be executed", action="store_true")
 
     project_ids = []
     args = parser.parse_args()
@@ -211,8 +216,14 @@ def main():
     pool_name = args.pool_name
     provider_name = args.provider_name
 
+    if args.gcp_role:
+        roles = args.gcp_role
+    else:
+        roles = ["roles/viewer"]
+
     project_ids.insert(0, project_id)
-    project_ids = project_ids + args.additional_project_ids
+    if args.additional_project_id:
+        project_ids = project_ids + args.additional_project_id
 
     realms = load_realms(REALMS_JSON)
 
@@ -221,6 +232,11 @@ def main():
         print("Available realms:")
         print(", ".join(realms.keys()))
         sys.exit(1)
+
+    if args.dry_run:
+        print("RUN IN DRY MODE")
+        print("No command will be actually executed")
+        print("*" * 40)
 
     realm_info = realms[realm_name]
     realm_type = realm_info["type"]
@@ -234,16 +250,17 @@ def main():
     resources_to_create = [
         f"Workload Identity Pool: {pool_name}",
         f"Workload Identity Provider: {provider_name}",
-        f"Provider added as member to IAM role: {args.gcp_role}"
     ]
-    get_user_approval(resources_to_create)
+    resources_to_create = resources_to_create + [f"Provider added as member to IAM role: {role}" for role in roles]
+    if not args.dry_run:
+        get_user_approval(resources_to_create)
 
     if realm_type == "aws":
         aws_role_arn = realm_info["role"]
         account_id = extract_account_id(aws_role_arn)
-        provider = AWSWIFProvider(project_number, project_id, realm_name, args.gcp_role, account_id, aws_role_arn, pool_name, provider_name, auto_mode)
+        provider = AWSWIFProvider(project_number, project_id, realm_name, account_id, aws_role_arn, pool_name, provider_name, auto_mode, args.dry_run)
     else:
-        provider = GCPWIFProvider(project_number, project_id, realm_name, args.gcp_role, realm_info["sa_email"], pool_name, provider_name, auto_mode)
+        provider = GCPWIFProvider(project_number, project_id, realm_name, realm_info["sa_email"], pool_name, provider_name, auto_mode, args.dry_run)
 
     step("Creating identity pool")
     provider.create_identity_pool()
@@ -251,13 +268,14 @@ def main():
     provider.create_provider()
     for project_id in project_ids:
         step(f"Adding IAM policy binding for {project_id}")
-        provider.add_iam_policy_binding(project_id)
+        for role in roles:
+            provider.add_iam_policy_binding(project_id, role)
     step(f"Creating  credential config")
     provider.create_cred_config(output_file)
 
-    print_created_resources(resources_to_create)
-
-    print(f"WIF setup completed.")
+    if not args.dry_run:
+        print_created_resources(resources_to_create)
+        print(f"WIF setup completed.")
 
 
 def get_user_approval(resources):
