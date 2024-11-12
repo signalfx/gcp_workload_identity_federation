@@ -48,9 +48,9 @@ Optional Arguments:
 
 - `--output_file_path`: Path to save the credentials file. Default is gcp_wif_config.json.
 - `--project_number`: GCP project number (will be automatically fetched if not provided).
-- `--additional_project_id`: Additional project ID for which access will be granted. You can provide multiple projects by repeating --additional_project_id
+- `--additional_project_id`: Additional project ID for which access will be granted. You can provide multiple projects by repeating `--additional_project_id`.
 - `--ignore_existing`: In case of already existing resources, continue without ask (default is false).
-- `--gcp_role`: Specify role which will be granted. You can provide multiple roles by repeating --gcp_role. Default is roles/viewer.
+- `--gcp_role`: Specify role which will be granted. You can provide multiple roles by repeating `--gcp_role`. Default is `roles/viewer`.
 - `--pool_name`: Custom workload identity pool name (default is splunk-identity-pool).
 - `--provider_name`: Custom workload identity provider name (default is splunk-provider).
 - `--dry-run`: Just print what commands will be executed.
@@ -63,7 +63,7 @@ python setup_wif.py --ignore_existing enigma-123 us1
 
 ## Modifying config to API request
 
-When you are planning to set up an integration using API call, then config needs to be encoded into string. It can be achieved via such command:
+When you are planning to set up an integration using API, then config needs to be encoded into string. It can be achieved via the following command:
 
 ```bash
 jq -c '.' <<config_path>> | jq tostring
