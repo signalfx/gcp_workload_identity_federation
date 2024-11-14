@@ -270,7 +270,7 @@ def main():
         step(f"Adding IAM policy binding for {project_id}")
         for role in roles:
             provider.add_iam_policy_binding(project_id, role)
-    step(f"Creating  credential config")
+    step(f"Creating credential config")
     provider.create_cred_config(output_file)
 
     if not args.dry_run:
