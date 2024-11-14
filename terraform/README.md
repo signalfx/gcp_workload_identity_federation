@@ -7,7 +7,7 @@ This section provides two approaches to setting up Workload Identity Federation 
 
 ## Prerequisites
 
-Before running, ensure that the following:
+Before running, ensure the following:
 
 1. **Google Cloud SDK (`gcloud`)**:
     - Install [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/docs/install) if you haven't already.
