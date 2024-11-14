@@ -5,6 +5,22 @@ This section provides two approaches to setting up Workload Identity Federation 
 - **Using the workload-identity-pool module**
 - **Using GCP provider resources**
 
+## Prerequisites
+
+Before running, ensure the following:
+
+1. **Google Cloud SDK (`gcloud`)**:
+    - Install [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/docs/install) if you haven't already.
+    - Authenticate with your GCP account using:
+      ```bash
+      gcloud auth login
+      gcloud auth application-default login
+      ```
+    - Set the active project:
+      ```bash
+      gcloud config set project YOUR_PROJECT_ID
+      ```
+
 ## Using the workload-identity-pool Module
 
 For more details on the module, refer to the [module README.md](modules/README.md).

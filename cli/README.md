@@ -53,7 +53,7 @@ Optional Arguments:
 - `--gcp_role`: Specify role which will be granted. You can provide multiple roles by repeating `--gcp_role`. Default is `roles/viewer`.
 - `--pool_name`: Custom workload identity pool name (default is splunk-identity-pool).
 - `--provider_name`: Custom workload identity provider name (default is splunk-provider).
-- `--dry-run`: Just print what commands will be executed.
+- `--dry_run`: Just print what commands will be executed.
 
 Example:
 

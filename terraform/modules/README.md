@@ -15,6 +15,7 @@ Before running the script, ensure that the following are installed and configure
     - Authenticate with your GCP account using:
       ```bash
       gcloud auth login
+      gcloud auth application-default login
       ```
     - Set the active project:
       ```bash
