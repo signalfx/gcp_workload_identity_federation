@@ -6,12 +6,10 @@ import random
 import unittest
 from dotenv import load_dotenv
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import setup_wif
 from setup_wif import Result
 
 GCP_PROJECT_ID = 'molten-enigma-184614'
-
 
 def step(text):
     print("*" * 50)
