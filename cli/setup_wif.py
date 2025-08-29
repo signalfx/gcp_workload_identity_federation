@@ -64,7 +64,8 @@ class AWSWIFProvider(WIFProvider):
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
-            "--role", role
+            "--role", role,
+            "--condition=None"
         ]
         return run_command(command, dry_run=self.dry_run)
 
@@ -106,7 +107,8 @@ class GCPWIFProvider(WIFProvider):
         command = [
             "gcloud", "projects", "add-iam-policy-binding", project_id,
             "--member", member,
-            "--role", role
+            "--role", role,
+            "--condition=None"
         ]
         return run_command(command, dry_run=self.dry_run)
 
