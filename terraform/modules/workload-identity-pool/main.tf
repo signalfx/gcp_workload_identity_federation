@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    signalfx = {
+      source  = "splunk-terraform/signalfx"
+      version = "~> 9.0" # pick your floor
+    }
+  }
+}
+
 locals {
   is_aws_realm = local.realms_config[var.realm_name]["type"] == "aws"
   pool_id      = length(var.custom_pool_name) > 0 ? var.custom_pool_name : "splunk-identity-pool-${var.realm_name}"
