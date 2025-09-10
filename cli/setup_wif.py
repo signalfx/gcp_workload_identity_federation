@@ -35,18 +35,38 @@ class WIFProvider:
         ]
         return run_command(command, auto_mode=self.auto_mode, dry_run=self.dry_run)
 
-    def add_iam_policy_binding(self, project_id, role) -> tuple[str, Result]:
-        raise NotImplementedError("This method should be implemented by subclasses.")
+    def add_iam_policy_binding(self, project_id, role):
+        command = [
+            "gcloud", "projects", "add-iam-policy-binding", project_id,
+            "--member", self.get_member(),
+            "--role", role,
+            "--condition=None"
+        ]
+        return run_command(command, dry_run=self.dry_run)
+
+    def add_iam_policy_binding_folder(self, folder_id, role):
+        command = [
+            "gcloud", "resource-manager", "folders", "add-iam-policy-binding", folder_id,
+            "--member", self.get_member(),
+            "--role", role,
+            "--condition=None"
+        ]
+        return run_command(command, dry_run=self.dry_run)
 
     def create_cred_config(self, output_file):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
+    def get_member(self):
+        raise NotImplementedError("This method should be implemented by subclasses.")
 
 class AWSWIFProvider(WIFProvider):
     def __init__(self, project_number, project_id, realm_name, account_id, aws_role_arn, pool_name, provider_name, auto_mode=False, dry_run=False):
         super().__init__(project_number, project_id, realm_name, pool_name, provider_name, auto_mode, dry_run)
         self.account_id = account_id
         self.aws_role_arn = aws_role_arn
+
+    def get_member(self):
+        return f'principalSet://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.pool_name}/attribute.aws_role/{self.aws_role_arn}'
 
     def create_provider(self) -> tuple[str, Result]:
         command = [
@@ -58,16 +78,6 @@ class AWSWIFProvider(WIFProvider):
             "--project", self.project_id
         ]
         return run_command(command, auto_mode=self.auto_mode, dry_run=self.dry_run)
-
-    def add_iam_policy_binding(self, project_id, role):
-        member = f'principalSet://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.pool_name}/attribute.aws_role/{self.aws_role_arn}'
-        command = [
-            "gcloud", "projects", "add-iam-policy-binding", project_id,
-            "--member", member,
-            "--role", role,
-            "--condition=None"
-        ]
-        return run_command(command, dry_run=self.dry_run)
 
     def create_cred_config(self, output_file):
         command = [
@@ -90,6 +100,9 @@ class GCPWIFProvider(WIFProvider):
         super().__init__(project_number, project_id, realm_name, pool_name, provider_name, auto_mode, dry_run)
         self.sa_email = sa_email
 
+    def get_member(self):
+        return f'principal://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.pool_name}/subject/{self.sa_email}'
+
     def create_provider(self):
         command = [
             "gcloud", "iam", "workload-identity-pools", "providers", "create-oidc", self.provider_name,
@@ -101,16 +114,6 @@ class GCPWIFProvider(WIFProvider):
             "--project", self.project_id
         ]
         return run_command(command, auto_mode=self.auto_mode, dry_run=self.dry_run)
-
-    def add_iam_policy_binding(self, project_id, role):
-        member = f'principal://iam.googleapis.com/projects/{self.project_number}/locations/global/workloadIdentityPools/{self.pool_name}/subject/{self.sa_email}'
-        command = [
-            "gcloud", "projects", "add-iam-policy-binding", project_id,
-            "--member", member,
-            "--role", role,
-            "--condition=None"
-        ]
-        return run_command(command, dry_run=self.dry_run)
 
     def create_cred_config(self, output_file):
         source_url = (f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?"
@@ -216,10 +219,14 @@ def main(args=None, realms_config=REALMS_JSON):
     parser.add_argument("--output_file", help="Output file path for the credential config (default: gcp_wif_config.json)",
                         default="gcp_wif_config.json")
     parser.add_argument("--additional_project_id", action='append', default=None,
-                        help="Optional list of additional project IDs for which access will be granted. You can provide multiple roles by repeating --additional_project_id")
+                        help="Optional list of additional project IDs for which access will be granted. You can provide multiple projects by repeating --additional_project_id")
+    parser.add_argument("--folder_id", action='append', default=None,
+                        help="Optional list of folders to which the script will bound roles. You can provide multiple folders by repeating --folder_id")
     parser.add_argument("--ignore_existing", action="store_true", help="In case of already existing resources, continue without ask")
     parser.add_argument("--gcp_role", default=None, action='append',
                         help="Specify role which will be granted. You can provide multiple roles by repeating --gcp_role. By default it uses 'roles/viewer'")
+    parser.add_argument("--include_multiproject_roles",
+                        help="Include also recommended roles for multi-project setup - roles/browser and roles/serviceusage.serviceUsageConsumer on top of roles/viewer. Roles specified with --gcp_role will be ignored.", action="store_true")
     parser.add_argument("--pool_name", help="Custom workload identity pool name", default="splunk-identity-pool")
     parser.add_argument("--provider_name", help="Custom workload identity provider name", default="splunk-provider")
     parser.add_argument("--dry_run", help="Just print what commands will be executed", action="store_true")
@@ -239,10 +246,16 @@ def main(args=None, realms_config=REALMS_JSON):
         roles = args.gcp_role
     else:
         roles = ["roles/viewer"]
+        if args.include_multiproject_roles:
+            roles += ['roles/browser', 'roles/serviceusage.serviceUsageConsumer']
 
     project_ids.insert(0, project_id)
     if args.additional_project_id:
         project_ids = project_ids + args.additional_project_id
+
+    folder_ids = []
+    if args.folder_id:
+        folder_ids = args.folder_id
 
     realms = load_realms(realms_config)
 
@@ -289,6 +302,10 @@ def main(args=None, realms_config=REALMS_JSON):
         step(f"Adding IAM policy binding for {project_id}")
         for role in roles:
             provider.add_iam_policy_binding(project_id, role)
+    for folder_id in folder_ids:
+        step(f"Adding IAM policy binding for {folder_id}")
+        for role in roles:
+            provider.add_iam_policy_binding_folder(folder_id, role)
     step(f"Creating credential config")
     cred_config = provider.create_cred_config(output_file)
 
