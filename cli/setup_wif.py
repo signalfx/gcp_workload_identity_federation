@@ -226,7 +226,7 @@ def main(args=None, realms_config=REALMS_JSON):
     parser.add_argument("--gcp_role", default=None, action='append',
                         help="Specify role which will be granted. You can provide multiple roles by repeating --gcp_role. By default it uses 'roles/viewer'")
     parser.add_argument("--include_multiproject_roles",
-                        help="Include also recommended roles for multi-project setup - roles/browser and roles/serviceusage.serviceUsageConsumer on top of roles/viewer. Roles specified with --gcp_role will be ignored.", action="store_true")
+                        help="Include also recommended roles for multi-project setup: 'roles/browser' and 'roles/serviceusage.serviceUsageConsumer' on top of 'roles/viewer'. Roles specified with --gcp_role will be ignored.", action="store_true")
     parser.add_argument("--pool_name", help="Custom workload identity pool name", default="splunk-identity-pool")
     parser.add_argument("--provider_name", help="Custom workload identity provider name", default="splunk-provider")
     parser.add_argument("--dry_run", help="Just print what commands will be executed", action="store_true")
