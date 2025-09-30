@@ -40,6 +40,7 @@ resource "google_iam_workload_identity_pool" "identity_pool" {
 
 resource "google_iam_workload_identity_pool_provider" "aws_provider" {
   count                              = local.is_aws_realm ? 1 : 0
+  project                            = var.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = local.provider_id
   attribute_condition                = "attribute.aws_role == \"${local.realms_config[var.realm_name]["role"]}\""
@@ -51,6 +52,7 @@ resource "google_iam_workload_identity_pool_provider" "aws_provider" {
 
 resource "google_iam_workload_identity_pool_provider" "gcp_provider" {
   count                     = local.is_aws_realm ? 0 : 1
+  project                   = var.project_id
   workload_identity_pool_id = google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id
   attribute_mapping         = {
     "google.subject" = "assertion.email"
@@ -63,10 +65,37 @@ resource "google_iam_workload_identity_pool_provider" "gcp_provider" {
 }
 
 resource "google_project_iam_member" "member" {
-  for_each = toset(concat(var.additional_project_ids, [var.project_id]))
-  project  = each.value
-  role     = var.role
-  member   = local.is_aws_realm ? "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${local.realms_config[var.realm_name]["role"]}" : "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${local.realms_config[var.realm_name]["sa_email"]}"
+  for_each = {
+    for project_and_role in flatten([
+      for project_id in concat(var.additional_project_ids, [var.project_id]) : [
+        for role in var.roles : {
+          project_id = project_id
+          role       = role
+        }
+      ]
+    ]) :
+    "${project_and_role.project_id}:${project_and_role.role}" => project_and_role
+  }
+  project = each.value.project_id
+  role    = each.value.role
+  member  = local.is_aws_realm ? "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${local.realms_config[var.realm_name]["role"]}" : "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${local.realms_config[var.realm_name]["sa_email"]}"
+}
+
+resource "google_folder_iam_member" "member" {
+  for_each = {
+    for folder_and_role in flatten([
+      for folder in var.folder_ids : [
+        for role in var.roles : {
+          folder = folder
+          role   = role
+        }
+      ]
+    ]) :
+    "${folder_and_role.folder}:${folder_and_role.role}" => folder_and_role
+  }
+  folder = each.value.folder
+  role   = each.value.role
+  member = local.is_aws_realm ? "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${local.realms_config[var.realm_name]["role"]}" : "principal://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/subject/${local.realms_config[var.realm_name]["sa_email"]}"
 }
 
 output "credentials_config" {
