@@ -15,16 +15,20 @@ variable "provider_name" {
   default     = "splunk-provider"
 }
 
-variable "additional_project_ids" {
-  description = "List of additional project IDs for IAM policy binding."
-  type        = list(string)
-  default     = []
+variable "folder" {
+  description = "Id of a folder containing synced projects"
+  type        = string
 }
 
-variable "role" {
+variable "additional_project_ids" {
+  description = "List of additional project IDs for IAM policy binding."
+  type = set(string)
+}
+
+variable "roles" {
   description = "Role which will be granted."
-  type        = string
-  default     = "roles/viewer"
+  type        = set(string)
+  default     = ["roles/viewer", "roles/serviceusage.serviceUsageConsumer"]
 }
 
 variable "splunk_role_arn" {

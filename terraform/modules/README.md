@@ -26,8 +26,9 @@ Before running the script, ensure that the following are installed and configure
 
 - `project_id` (string, required): The GCP project ID.
 - `realm_name` (string, required):  [The Splunk Observability realm](https://docs.splunk.com/observability/en/admin/references/organizations.html) to configure. It can be found at: User Profile -> Organizations.
-- `additional_project_ids` (list(string), optional, default: []): A list of additional project IDs for which access will be granted (IAM bindings will be added)
-- `role` (string, optional, default: "roles/viewer"): The IAM role which will be granted.
+- `additional_project_ids` (list(string), optional, default: []): A list of additional project IDs for which access will be granted (IAM bindings will be added). Use this if you want to explicitly grant permissions to each projects. For automatic project synchronization, use `folder_ids`.
+- `folder_ids` (list(string), optional, default: []): A list of folder IDs for which access will be granted (IAM bindings will be added).
+- `roles` (list(string), optional, default: ["roles/viewer", "roles/browser", "roles/serviceusage.serviceUsageConsumer"]). List of roles that will be added to projects in `project_id`, `additional_project_ids` and folders in `folder_ids`.
 - `custom_pool_name` (string, optional, default: ""): Custom name for the Workload Identity Pool. If not provided, a default name will be generated based on the realm name.
 - `custom_provider_name` (string, optional, default: ""): Custom name for the Workload Identity Provider. If not provided, a default name will be generated based on the realm name. 
 

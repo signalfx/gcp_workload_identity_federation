@@ -6,6 +6,7 @@ terraform {
     }
     signalfx = {
       source = "splunk-terraform/signalfx"
+      //TODO: version bump
     }
   }
   required_version = ">= 0.13.0"
@@ -20,6 +21,7 @@ provider signalfx {
   auth_token = "<token>"
   api_url    = "https://api.signalfx.com"
 }
+
 locals {
   credentials_config = jsonencode({
     "universe_domain" : "googleapis.com",
@@ -57,10 +59,10 @@ resource "google_iam_workload_identity_pool_provider" "provider" {
   }
 }
 
-resource "google_project_iam_member" "member" {
-  for_each = toset(concat(var.additional_project_ids, [var.project_id]))
-  project  = each.value
-  role     = var.role
+resource "google_folder_iam_member" "member" {
+  for_each = var.roles
+  folder = var.folder
+  role   = each.value
   member   = "principalSet://iam.googleapis.com/projects/${data.google_project.selected.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.identity_pool.workload_identity_pool_id}/attribute.aws_role/${var.splunk_role_arn}"
 }
 
@@ -69,10 +71,10 @@ resource "signalfx_gcp_integration" "example_integration" {
   enabled      = true
   poll_rate    = 600
   include_list = ["labels"]
+  use_metric_source_project_for_quota = true
   auth_method  = "WORKLOAD_IDENTITY_FEDERATION"
-  project_wif_configs {
-    project_id = var.project_id
-    wif_config = local.credentials_config
-
+  workload_identity_federation_config = local.credentials_config
+  projects {
+    selected_project_ids = concat(tolist(var.additional_project_ids), [var.project_id])
   }
 }

@@ -21,15 +21,21 @@ variable "additional_project_ids" {
   default     = []
 }
 
+variable "folder_ids" {
+  description = "List of folder IDs for IAM policy binding."
+  type        = list(string)
+  default = []
+}
+
 variable "realm_name" {
   description = "The Splunk Observability realm. It can be found at: User Profile -> Organizations"
   type        = string
 }
 
-variable "role" {
+variable "roles" {
   description = "Role which will be granted."
-  type        = string
-  default     = "roles/viewer"
+  type        = list(string)
+  default     = ["roles/viewer", "roles/browser", "roles/serviceusage.serviceUsageConsumer"]
 }
 
 variable "custom_realms_config_path" {

@@ -22,6 +22,8 @@ Alternatively, you can use the following predefined role:
 
 Additionally, you need the permission to create IAM bindings:
 - `resourcemanager.projects.setIamPolicy`
+- `resourcemanager.folders.setIamPolicy`
 
-You can also use predefined role:
+You can also use predefined roles:
 - `roles/resourcemanager.projectIamAdmin`
+- `roles/resourcemanager.folderIamAdmin`
