@@ -6,7 +6,7 @@ terraform {
     }
     signalfx = {
       source = "splunk-terraform/signalfx"
-      //TODO: version bump
+      version = ">=9.22.0"
     }
   }
   required_version = ">= 0.13.0"
