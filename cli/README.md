@@ -50,7 +50,7 @@ Optional Arguments:
 - `--project_number`: GCP project number (will be automatically fetched if not provided).
 - `--additional_project_id`: Additional project ID for which access will be granted. You can provide multiple projects by repeating `--additional_project_id`.
 - `--folder_id`: Folder ID for which access will be granted. Use for auto synchronization of projects in the folder. You can provide multiple folders by repeating `--folder_id`.
-- `---include_multiproject_roles`: Include roles enabling automatic synchronization of projects that have necessary permissions. Those roles are `roles/browser` and `roles/serviceusage.serviceUsageConsumer`.
+- `--include_multiproject_roles`: Include roles enabling automatic synchronization of projects that have necessary permissions. Those roles are `roles/browser` and `roles/serviceusage.serviceUsageConsumer`.
 - `--ignore_existing`: In case of already existing resources, continue without ask (default is false).
 - `--gcp_role`: Specify role which will be granted. You can provide multiple roles by repeating `--gcp_role`. Default is `roles/viewer`.
 - `--pool_name`: Custom workload identity pool name (default is splunk-identity-pool).
