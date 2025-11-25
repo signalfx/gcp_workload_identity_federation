@@ -30,5 +30,9 @@
   "eu2": {
     "type": "aws",
     "role": "arn:aws:sts::417715959474:assumed-role/eu2-splunk-observability"
+  },
+  "sg0": {
+    "type": "aws",
+    "role": "arn:aws:sts::688567270210:assumed-role/sg0-splunk-observability"
   }
 }
