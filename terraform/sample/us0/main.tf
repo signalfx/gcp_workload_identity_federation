@@ -19,7 +19,7 @@ provider "google" {
 
 provider signalfx {
   auth_token = "<token>"
-  api_url    = "https://api.signalfx.com"
+  api_url    = "<your Splunk Observability Cloud API Url>"
 }
 
 locals {
